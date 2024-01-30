@@ -15,28 +15,21 @@ class VideoCaptureThread(threading.Thread):
 
     def run(self):
         self.running = True
-        img_counter = 0
-
         while self.running:
+            # Capture frame-by-frame
             ret, frame = self.cam.read()
-            self.frame = frame
-            if not ret:
-                break
-            k = cv2.waitKey(1)
 
-            if k % 256 == 27:
-                # ESC pressed
-                print("Escape hit, closing...")
-                self.stop()
-            elif k % 256 == 32:
-                # SPACE pressed
-                img_name = "opencv_frame_{}.png".format(img_counter)
-                cv2.imwrite(img_name, frame)
-                print("{} written!".format(img_name))
-                img_counter += 1
-            # elif the window is closed with the X button
-            elif cv2.getWindowProperty('frame', 0) == -1:
-                self.stop()
+            # We are using Motion JPEG, but OpenCV defaults to capture raw images,
+            # so we must encode it into JPEG in order to correctly display the
+            # video stream
+            ret, jpeg = cv2.imencode('.jpg', frame)
+            # frame = jpeg.tobytes()
+            self.frame = frame
+
+            # Display the resulting frame
+            # cv2.imshow('frame', frame)
+            if cv2.waitKey(1) == ord('q'):
+                break
 
     def stop(self):
         self.running = False
@@ -48,7 +41,6 @@ class VideoCapture:
     def __init__(self, canvas: tk.Canvas):
         self.video_thread = VideoCaptureThread()
         self.canvas: tk.Canvas = canvas
-        self.frame = None
 
     def _update_canvas(self):
         frame = self.video_thread.frame
@@ -56,18 +48,17 @@ class VideoCapture:
             # Convert the image from BGR to RGB
             frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
 
-            # Convert the image from OpenCV to PIL format
-            image = Image.fromarray(frame)
+            # Use PIL (Pillow) to convert the NumPy ndarray to a PhotoImage
+            photo = ImageTk.PhotoImage(image=Image.fromarray(frame))
 
-            # Convert the image from PIL to PhotoImage format
-            image = ImageTk.PhotoImage(image)
+            # Add a PhotoImage to the Canvas
+            self.canvas.create_image(0, 0, image=photo, anchor=tk.NW)
+            # Save a reference to the PhotoImage, otherwise it's garbage collected
+            self.canvas.photo = photo
 
-            # Clear the canvas and create a new image item
-            self.canvas.delete("all")
-            self.canvas.create_image(0, 0, image=image, anchor='nw')
-
+        # Call the _update_canvas method again after 1 ms if the video thread is still running
         if self.video_thread.running:
-            self.canvas.after(1, self._update_canvas, self.canvas)  # Update the canvas every 1 ms
+            self.canvas.after(1, self._update_canvas)
 
     def capture_photo(self):
         # Create a canvas for the video capture
@@ -78,3 +69,6 @@ class VideoCapture:
 
         # Start the function to update the video canvas
         self._update_canvas()
+
+    def stop(self):
+        self.video_thread.stop()

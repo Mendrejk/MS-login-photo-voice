@@ -8,7 +8,7 @@ class RegisterPage:
     def __init__(self, root, show_start_page):
         self.root = root
         self.show_start_page = show_start_page
-        self.voice_canvas = None
+        self.audio_canvas = None
         self.video_canvas = None
         self.video_capture = None
         self.audio_capture = None
@@ -20,11 +20,17 @@ class RegisterPage:
     #     conn.commit()
 
     def capture_photo(self):
+        if self.audio_capture is not None:
+            self.audio_capture.stop()
+
         self.video_capture = VideoCapture.VideoCapture(self.video_canvas)
         self.video_capture.capture_photo()
 
     def capture_audio(self):
-        self.audio_capture = AudioCapture.AudioCapture(self.voice_canvas)
+        if self.video_capture is not None:
+            self.video_capture.stop()
+
+        self.audio_capture = AudioCapture.AudioCapture(self.audio_canvas)
         self.audio_capture.capture_audio()
 
     def show(self):
@@ -34,17 +40,22 @@ class RegisterPage:
         username_entry = ttk.Entry(self.root)
         username_entry.pack()
 
-        ttk.Button(self.root, text="Capture Voice", command=self.capture_audio)
+        ttk.Button(self.root, text="Capture Voice", command=self.capture_audio).pack()
 
-        ttk.Button(self.root, text="Capture Photo", command=self.capture_photo)
+        ttk.Button(self.root, text="Capture Photo", command=self.capture_photo).pack()
 
-        ttk.Button(self.root, text="Register", command=self.register)
+        ttk.Button(self.root, text="Register", command=self.register).pack()
 
         back_button = ttk.Button(self.root, text="Back", command=self.show_start_page)
         back_button.pack()
 
         media_frame = ttk.Frame(self.root)
-        media_frame.grid(row=2, column=1)
+        media_frame.pack()
 
-        self.voice_canvas = tk.Canvas(media_frame, width=800, height=800, highlightthickness=2, highlightbackground="red")
-        self.video_canvas = tk.Canvas(media_frame, width=800, height=800, highlightthickness=2, highlightbackground="blue")
+        self.audio_canvas = tk.Canvas(media_frame, width=800, height=800, highlightthickness=2,
+                                      highlightbackground="red")
+        self.audio_canvas.pack(side='left')
+
+        self.video_canvas = tk.Canvas(media_frame, width=800, height=800, highlightthickness=2,
+                                      highlightbackground="blue")
+        self.video_canvas.pack(side='left')

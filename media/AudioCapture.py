@@ -87,3 +87,6 @@ class AudioCapture:
         self.canvas.pack(side='left', expand=True)
         self.audio_thread.start()
         self._update_canvas()
+
+    def stop(self):
+        self.audio_thread.stop()

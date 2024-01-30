@@ -1,5 +1,5 @@
 import os
-import sys
+import cv2
 
 from pages.Window import Window
 
