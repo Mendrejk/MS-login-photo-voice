@@ -8,6 +8,12 @@ import pyaudio
 import wave
 
 
+def load(file_path):
+    with wave.open(file_path, 'rb') as audio_file:
+        audio_data = audio_file.readframes(-1)
+    return audio_data
+
+
 class AudioCaptureThread(threading.Thread):
     def __init__(self, frames):
         super(AudioCaptureThread, self).__init__()
@@ -21,7 +27,7 @@ class AudioCaptureThread(threading.Thread):
         FORMAT = pyaudio.paInt16
         CHANNELS = 1
         RATE = 44100
-        RECORD_SECONDS = 5
+        RECORD_SECONDS = 8
 
         self.running = True
 

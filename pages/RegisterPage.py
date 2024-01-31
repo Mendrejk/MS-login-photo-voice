@@ -36,6 +36,8 @@ class RegisterPage:
         self.video_capture.save(photo_file_path)
         self.audio_capture.save(audio_file_path)
 
+        self.show_start_page()
+
     def start_capturing_photo(self):
         if self.audio_capture is not None:
             self.audio_capture.stop()

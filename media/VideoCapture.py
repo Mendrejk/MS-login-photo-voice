@@ -6,6 +6,11 @@ import threading
 from PIL import Image, ImageTk
 
 
+def load(file_path):
+    photo_data = cv2.imread(file_path)
+    return photo_data
+
+
 class VideoCaptureThread(threading.Thread):
     def __init__(self):
         super(VideoCaptureThread, self).__init__()

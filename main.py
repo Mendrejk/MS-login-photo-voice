@@ -16,7 +16,6 @@ def main():
 
     # Iterate over all files
     for file in files:
-        print(file)
         # If the file name contains the specific string
         if "voice_sample" in file or "opencv_frame" in file:
             # Delete the file
