@@ -9,11 +9,12 @@ import wave
 
 
 class AudioCaptureThread(threading.Thread):
-    def __init__(self):
+    def __init__(self, frames):
         super(AudioCaptureThread, self).__init__()
         self.p = pyaudio.PyAudio()
         self.running = False
         self.audio_data = None
+        self.frames = frames
 
     def run(self):
         CHUNK = 1024
@@ -21,15 +22,12 @@ class AudioCaptureThread(threading.Thread):
         CHANNELS = 1
         RATE = 44100
         RECORD_SECONDS = 5
-        WAVE_OUTPUT_FILENAME = "../voice_sample.wav"
-
-        frames = []
 
         self.running = True
 
         def callback(in_data, frame_count, time_info, status):
             self.audio_data = np.frombuffer(in_data, dtype=np.int16)
-            frames.append(in_data)
+            self.frames.append(in_data)
             return in_data, pyaudio.paContinue
 
         stream = self.p.open(format=FORMAT,
@@ -45,16 +43,6 @@ class AudioCaptureThread(threading.Thread):
         while time.time() - start_time < RECORD_SECONDS:
             time.sleep(0.1)
 
-        print("finished recording")
-        stream.stop_stream()
-        stream.close()
-        wf = wave.open(WAVE_OUTPUT_FILENAME, 'wb')
-        wf.setnchannels(CHANNELS)
-        wf.setsampwidth(self.p.get_sample_size(FORMAT))
-        wf.setframerate(RATE)
-        wf.writeframes(b''.join(frames))
-        wf.close()
-
         self.running = False
         self.stop()
 
@@ -65,7 +53,8 @@ class AudioCaptureThread(threading.Thread):
 
 class AudioCapture:
     def __init__(self, cavas: tk.Canvas):
-        self.audio_thread = AudioCaptureThread()
+        self.frames = []
+        self.audio_thread = AudioCaptureThread(self.frames)
         self.canvas = cavas
 
     def _update_canvas(self):
@@ -90,3 +79,15 @@ class AudioCapture:
 
     def stop(self):
         self.audio_thread.stop()
+
+    def save(self, file_path):
+        FORMAT = pyaudio.paInt16
+        CHANNELS = 1
+        RATE = 44100
+
+        wf = wave.open(file_path, 'wb')
+        wf.setnchannels(CHANNELS)
+        wf.setsampwidth(self.audio_thread.p.get_sample_size(FORMAT))
+        wf.setframerate(RATE)
+        wf.writeframes(b''.join(self.frames))
+        wf.close()

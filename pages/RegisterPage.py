@@ -1,4 +1,5 @@
-from tkinter import ttk
+import os
+from tkinter import ttk, messagebox
 import tkinter as tk
 
 from media import AudioCapture, VideoCapture
@@ -12,19 +13,42 @@ class RegisterPage:
         self.video_canvas = None
         self.video_capture = None
         self.audio_capture = None
+        self.saved_photo = None
+        self.save_photo_button = None
+        self.username_entry = None
 
     def register(self):
-        pass
-    #     username = self.entry_username.get()
-    #     c.execute("INSERT INTO users VALUES (?, ?, ?)", (username, voice_sample_path, photo_sample_path))
-    #     conn.commit()
+        username = self.username_entry.get()
 
-    def capture_photo(self):
+        # Check if the username is not empty
+        if not username:
+            messagebox.showerror("Error", "Username cannot be empty.")
+            return
+
+        photo_file_path = f"{username}.jpg"
+        audio_file_path = f"{username}.wav"
+
+        # Check if the files do not exist
+        if os.path.exists(photo_file_path) or os.path.exists(audio_file_path):
+            messagebox.showerror("Error", "Files with the inputted username and .jpg or .wav extensions currently exist.")
+            return
+
+        self.video_capture.save(photo_file_path)
+        self.audio_capture.save(audio_file_path)
+
+    def start_capturing_photo(self):
         if self.audio_capture is not None:
             self.audio_capture.stop()
 
         self.video_capture = VideoCapture.VideoCapture(self.video_canvas)
-        self.video_capture.capture_photo()
+        self.video_capture.start_video_capture()
+
+        self.save_photo_button.config(state="normal")
+
+    def capture_photo(self):
+        self.saved_photo = self.video_capture.take_photo()
+        self.video_capture = None
+        self.save_photo_button.config(state="disabled")
 
     def capture_audio(self):
         if self.video_capture is not None:
@@ -37,12 +61,12 @@ class RegisterPage:
         for widget in self.root.winfo_children():
             widget.pack_forget()
 
-        username_entry = ttk.Entry(self.root)
-        username_entry.pack()
+        self.username_entry = ttk.Entry(self.root)
+        self.username_entry.pack()
 
         ttk.Button(self.root, text="Capture Voice", command=self.capture_audio).pack()
 
-        ttk.Button(self.root, text="Capture Photo", command=self.capture_photo).pack()
+        ttk.Button(self.root, text="Capture Photo", command=self.start_capturing_photo).pack()
 
         ttk.Button(self.root, text="Register", command=self.register).pack()
 
@@ -56,6 +80,13 @@ class RegisterPage:
                                       highlightbackground="red")
         self.audio_canvas.pack(side='left')
 
-        self.video_canvas = tk.Canvas(media_frame, width=800, height=800, highlightthickness=2,
+        video_frame = ttk.Frame(media_frame)
+        video_frame.pack(side='left')
+
+        self.video_canvas = tk.Canvas(video_frame, width=800, height=800, highlightthickness=2,
                                       highlightbackground="blue")
-        self.video_canvas.pack(side='left')
+        self.video_canvas.pack()
+
+        self.save_photo_button = ttk.Button(video_frame, text="Save Photo", command=self.capture_photo)
+        self.save_photo_button.pack()
+        self.save_photo_button.config(state="disabled")

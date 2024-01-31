@@ -60,7 +60,7 @@ class VideoCapture:
         if self.video_thread.running:
             self.canvas.after(1, self._update_canvas)
 
-    def capture_photo(self):
+    def start_video_capture(self):
         # Create a canvas for the video capture
         self.canvas.pack(side='left', expand=True)
 
@@ -70,5 +70,18 @@ class VideoCapture:
         # Start the function to update the video canvas
         self._update_canvas()
 
+    def take_photo(self):
+        # stop capturing video
+        self.stop()
+
+        if self.video_thread.frame is None:
+            return None
+
+        return self.video_thread.frame
+
     def stop(self):
         self.video_thread.stop()
+
+    def save(self, file_path):
+        if self.video_thread.frame is not None:
+            cv2.imwrite(file_path, self.video_thread.frame)
