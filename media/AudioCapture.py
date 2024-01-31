@@ -15,19 +15,20 @@ def load(file_path):
 
 
 class AudioCaptureThread(threading.Thread):
-    def __init__(self, frames):
+    def __init__(self, frames, stop_callback):
         super(AudioCaptureThread, self).__init__()
         self.p = pyaudio.PyAudio()
         self.running = False
         self.audio_data = None
         self.frames = frames
+        self.stop_callback = stop_callback
 
     def run(self):
         CHUNK = 1024
         FORMAT = pyaudio.paInt16
         CHANNELS = 1
         RATE = 44100
-        RECORD_SECONDS = 8
+        RECORD_SECONDS = 10
 
         self.running = True
 
@@ -49,6 +50,7 @@ class AudioCaptureThread(threading.Thread):
         while time.time() - start_time < RECORD_SECONDS:
             time.sleep(0.1)
 
+        self.stop_callback(self.p.get_sample_size(FORMAT))
         self.running = False
         self.stop()
 
@@ -60,7 +62,7 @@ class AudioCaptureThread(threading.Thread):
 class AudioCapture:
     def __init__(self, cavas: tk.Canvas):
         self.frames = []
-        self.audio_thread = AudioCaptureThread(self.frames)
+        self.audio_thread = AudioCaptureThread(self.frames, self.stop_callback)
         self.canvas = cavas
 
     def _update_canvas(self):
@@ -85,6 +87,17 @@ class AudioCapture:
 
     def stop(self):
         self.audio_thread.stop()
+
+    def stop_callback(self, sample_size):
+        CHANNELS = 1
+        RATE = 44100
+
+        wf = wave.open('last.wav', 'wb')
+        wf.setnchannels(CHANNELS)
+        wf.setsampwidth(sample_size)
+        wf.setframerate(RATE)
+        wf.writeframes(b''.join(self.frames))
+        wf.close()
 
     def save(self, file_path):
         FORMAT = pyaudio.paInt16

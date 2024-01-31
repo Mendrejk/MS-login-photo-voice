@@ -1,13 +1,6 @@
 import os
-import cv2
 
 from pages.Window import Window
-
-# Create in-memory SQLite database
-# conn = sqlite3.connect(':memory:')
-# c = conn.cursor()
-# c.execute('''CREATE TABLE users
-#              (username text, voice_sample text, photo text)''')
 
 
 def main():
@@ -17,7 +10,7 @@ def main():
     # Iterate over all files
     for file in files:
         # If the file name contains the specific string
-        if "voice_sample" in file or "opencv_frame" in file:
+        if ".jpg" in file or ".wav" in file:
             # Delete the file
             os.remove(file)
 

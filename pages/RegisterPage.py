@@ -30,7 +30,7 @@ class RegisterPage:
 
         # Check if the files do not exist
         if os.path.exists(photo_file_path) or os.path.exists(audio_file_path):
-            messagebox.showerror("Error", "Files with the inputted username and .jpg or .wav extensions currently exist.")
+            messagebox.showerror("Error", "Username is already taken.")
             return
 
         self.video_capture.save(photo_file_path)
@@ -49,7 +49,6 @@ class RegisterPage:
 
     def capture_photo(self):
         self.saved_photo = self.video_capture.take_photo()
-        self.video_capture = None
         self.save_photo_button.config(state="disabled")
 
     def capture_audio(self):
@@ -82,13 +81,13 @@ class RegisterPage:
                                       highlightbackground="red")
         self.audio_canvas.pack(side='left')
 
-        video_frame = ttk.Frame(media_frame)
+        video_frame = ttk.Frame(media_frame, width=800, height=850)
         video_frame.pack(side='left')
 
         self.video_canvas = tk.Canvas(video_frame, width=800, height=800, highlightthickness=2,
                                       highlightbackground="blue")
-        self.video_canvas.pack()
+        self.video_canvas.pack(side='top')
 
-        self.save_photo_button = ttk.Button(video_frame, text="Save Photo", command=self.capture_photo)
-        self.save_photo_button.pack()
+        self.save_photo_button = ttk.Button(self.root, text="Save Photo", command=self.capture_photo)
+        self.save_photo_button.pack(side='bottom')
         self.save_photo_button.config(state="disabled")

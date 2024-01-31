@@ -26,8 +26,7 @@ class LoginPage:
         photo_file_path = f"{username}.jpg"
         audio_file_path = f"{username}.wav"
 
-        # TODO: remove the True condition - it's just for testing
-        if True or os.path.exists(photo_file_path) and os.path.exists(audio_file_path):
+        if os.path.exists(photo_file_path) and os.path.exists(audio_file_path):
             self.capture_audio_button.config(state="normal")
             self.capture_photo_button.config(state="normal")
             self.login_button.config(state="normal")
@@ -50,11 +49,6 @@ class LoginPage:
 
         self.take_photo_button.config(state="normal")
 
-    def capture_photo(self):
-        self.saved_photo = self.video_capture.take_photo()
-        self.video_capture = None
-        self.take_photo_button.config(state="disabled")
-
     def login(self):
         username = self.username_entry.get()
 
@@ -65,14 +59,24 @@ class LoginPage:
         registered_audio_data = AudioCapture.load(audio_file_path)
         registered_photo_data = VideoCapture.load(photo_file_path)
 
-        # Placeholder comparison methods
-        audio_match = VoiceComparison.compare(registered_audio_data, self.audio_capture.frames)
+        audio_match = VoiceComparison.compare(audio_file_path, self.audio_capture.frames)
         photo_match = FaceComparison.compare(registered_photo_data, self.saved_photo)
 
-        if audio_match and photo_match:
+        if photo_match == FaceComparison.FaceComparisonResult.NO_FACE:
+            messagebox.showerror("Error", "No face detected in captured photo.")
+            return
+        if photo_match == FaceComparison.FaceComparisonResult.NO_MATCH:
+            messagebox.showerror("Error", "Face in captured photo does not match registered face.")
+            return
+
+        if audio_match:
             messagebox.showinfo("Success", "Login successful.")
         else:
-            messagebox.showerror("Error", "Login failed.")
+            messagebox.showerror("Error", "Voice does not match registered voice.")
+
+    def capture_photo(self):
+        self.saved_photo = self.video_capture.take_photo()
+        self.save_photo_button.config(state="disabled")
 
     def show(self):
         for widget in self.root.winfo_children():
@@ -91,15 +95,15 @@ class LoginPage:
                                       highlightbackground="red")
         self.audio_canvas.pack(side='left')
 
-        video_frame = ttk.Frame(media_frame)
+        video_frame = ttk.Frame(media_frame, width=800, height=850)
         video_frame.pack(side='left')
 
         self.video_canvas = tk.Canvas(video_frame, width=800, height=800, highlightthickness=2,
                                       highlightbackground="blue")
-        self.video_canvas.pack()
+        self.video_canvas.pack(side='top')
 
-        self.take_photo_button = ttk.Button(video_frame, text="Take Photo", command=self.start_capturing_photo)
-        self.take_photo_button.pack()
+        self.take_photo_button = ttk.Button(self.root, text="Take Photo", command=self.capture_photo)
+        self.take_photo_button.pack(side='bottom')
         self.take_photo_button.config(state="disabled")
 
         self.capture_audio_button = ttk.Button(self.root, text="Capture Voice", command=self.capture_audio)
