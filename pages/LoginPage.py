@@ -1,6 +1,7 @@
 import os
 from tkinter import ttk, messagebox
 import tkinter as tk
+import random
 
 from media import AudioCapture, VideoCapture, VoiceComparison, FaceComparison
 
@@ -39,6 +40,16 @@ class LoginPage:
 
         self.audio_capture = AudioCapture.AudioCapture(self.audio_canvas)
         self.audio_capture.capture_audio()
+
+        # Dialog starter questions in polish
+        questions = ["Jak się dziś czujesz?", "Jaka jest dzisiaj pogoda?", "Co jadłeś/aś wczoraj na obiad?"]
+
+        # Select a random question
+        question = "                                                Odpowiedz na pytanie: " + random.choice(questions)
+
+        # Create a label to display the question
+        question_label = ttk.Label(self.root, text=question)
+        question_label.pack(side='left')
 
     def start_capturing_photo(self):
         if self.audio_capture is not None:

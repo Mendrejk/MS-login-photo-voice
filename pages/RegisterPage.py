@@ -1,4 +1,5 @@
 import os
+import random
 from tkinter import ttk, messagebox
 import tkinter as tk
 
@@ -58,6 +59,14 @@ class RegisterPage:
         self.audio_capture = AudioCapture.AudioCapture(self.audio_canvas)
         self.audio_capture.capture_audio()
 
+        phrases = ["Lubię spędzać czas z moimi przyjaciółmi. Często gramy w gry planszowe", "Moją ulubioną porą roku jest jesień, ponieważ lubię spadające liście",
+                   "Wolę psy niż koty. Są bardziej przyjacielskie i bardziej energiczne", "Lubię czytać książki, mogę to robić godzinami", "Mój ulubiony kolor to niebieski. Przypomina mi on fale morskie"]
+        phrase = random.choice(phrases)
+
+        # Create a label to display the phrase
+        phrase_label = ttk.Label(self.root, text=f"                                                W celu rejestracji głosu wypowiedz frazę: {phrase}")
+        phrase_label.pack(side='left')
+
     def show(self):
         for widget in self.root.winfo_children():
             widget.pack_forget()
@@ -89,5 +98,5 @@ class RegisterPage:
         self.video_canvas.pack(side='top')
 
         self.save_photo_button = ttk.Button(self.root, text="Save Photo", command=self.capture_photo)
-        self.save_photo_button.pack(side='bottom')
+        self.save_photo_button.pack()
         self.save_photo_button.config(state="disabled")
